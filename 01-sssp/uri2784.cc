@@ -1,69 +1,65 @@
-#include <iostream>
-#include <set>
+#include <stdio.h>
 #include <vector>
-#include <cstdio>
+#include <queue>
+#include <algorithm>
 
 using namespace std;
-
-#define MAXN 1001
-#define INF 1001
+#define INFTO 100000
 
 typedef pair<int, int> ii;
- 
-int dist[MAXN], n, m;
-vector<ii> adjList[MAXN];
- 
-int dijkstra(int s, int t, int n, int dist[]) {
-	for(int i = 1; i <= n; i++) dist[i] = INF;
-	set<ii> pq;
-	dist[s] = 0;
-	pq.insert(ii(0, s));
-	while(!pq.empty()) {
-		int u = pq.begin()->second;
-		pq.erase(pq.begin());
-		for(int i=0; i<(int)adjList[u].size(); i++) {
-			int v = adjList[u][i].second;
-			int w = adjList[u][i].first;
-			if (dist[v] > dist[u] + w) {
-				pq.erase(ii(dist[v], v));
-				dist[v] = dist[u] + w;
-				pq.insert(ii(dist[v], v));
-			}
-		}
-	}
-	return dist[t];
+typedef vector<ii> vii;
+
+int n, m;
+vector<vii> adjList;
+vector<int> dist;
+
+void dijkstra(int s) {
+    dist.assign(n, INFTO);
+    dist[s] = 0;
+    priority_queue<ii, vector<ii>, greater<ii> > pq;
+    pq.push({0, s});
+
+    while (!pq.empty()) {
+        int u = pq.top().second;
+        pq.pop();
+        for(int i = 0; i < (int)adjList[u].size(); i++){
+            int v = adjList[u][i].first, w = adjList[u][i].second;
+            if(dist[v] > dist[u] + w){
+                dist[v] = dist[u] + w;
+                pq.push({dist[v], v});
+            }
+        }
+    }
 }
- 
+
 int main() {
-	int u, v, w, s;
-	int small, big, result, aux; 
-  	big = -1;
-  	small = INF;
+    int i, u, v, w, s;
+    int small, big;
 
-	cin >> n >> m;
+    whil e(scanf("%d %d", &n, &m) != EOF) {
+        adjList.assign(n, vii());
+        for(i = 0; i < m; i++){
+            scanf("%d %d %d", &u, &v, &w);
+            u--, v--;
+            adjList[u].push_back({v, w});
+            adjList[v].push_back({u, w});
+        }
 
-	for(int i=1; i<=n; i++) adjList[i].clear();
+        scanf("%d", &s);
+        dijkstra(--s);
 
-	for (int i=0; i<m; i++) {
-		cin >> u >> v >> w;
+        big = 0;
+        small = INFTO;
+        for (u = 0; u < n; u++) {
+            if(dist[u] != INFTO)
+                big = max(dist[u], big);
 
-		adjList[u].push_back(ii(w, v));
-		adjList[v].push_back(ii(w, u));
-	}
-	
-	cin >> s;
+            if(dist[u] != 0)
+                small = min(dist[u], small);
+        }
 
-	for (int i = 1; i <= n; i++) {
-		if (i != s) {
-			aux = dijkstra(s, i, n, dist);
-			
-			if (aux >= big) big = aux;
-			if (aux <= small) small = aux;
-		}
-		
-	}
-  
-  	cout << (big - small);
+        printf("%d\n", big - small);
+    }
 
-	return 0;
+    return 0;
 }
